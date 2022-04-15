@@ -1,0 +1,4 @@
+---
+- hosts: flightdeck_httpd
+  roles:
+    - flightdeck-httpd-init

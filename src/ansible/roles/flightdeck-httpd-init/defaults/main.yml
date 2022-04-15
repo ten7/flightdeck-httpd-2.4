@@ -1,0 +1,20 @@
+---
+flightdeck_httpd_default_vhost_envvars:
+  - name: "T7_SITE_ENVIRONMENT"
+    value: "{{ lookup('env', 'T7_SITE_ENVIRONMENT') | default('flightdeck-none', true) }}"
+  - name: "FLIGHTDECK_SITE_ENVIRONMENT"
+    value: "{{ lookup('env', 'FLIGHTDECK_SITE_ENVIRONMENT') | default('flightdeck-none', true) }}"
+
+flightdeck_httpd_default_vhosts:
+  - name: "{{ lookup('env', 'APACHE_SITE_NAME') | default('flightdeck.localhost', true) }}"
+    host: "*:80"
+    docroot: "{{ lookup('env', 'APACHE_DOCROOT_DIR') | default('/var/www/html', true )}}"
+    aliases: "{{ lookup('env', 'APACHE_SITE_ALIAS') | default(['docker.localhost'], true) }}"
+    env: "{{ flightdeck_httpd_default_vhost_envvars }}"
+    error_log: "/dev/stderr"
+    custom_log: "/dev/stdout"
+
+flightdeck_httpd_defaults:
+  vhosts: "{{ flightdeck_httpd_default_vhosts }}"
+
+flightdeck_httpd: flightdeck_httpd_defaults

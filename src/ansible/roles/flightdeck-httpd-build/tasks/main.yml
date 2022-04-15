@@ -1,0 +1,60 @@
+---
+- name: Do base configuration
+  include_role:
+    name: "ten7.flightdeck_base"
+- name: Install needed software
+  apk:
+    name: "{{ _packages | join(' ') }}"
+    state: present
+    update_cache: yes
+  vars:
+    _packages:
+      - "apache2"
+      - "apache2-proxy"
+      - "apache2-http2"
+      - "apache2-ssl"
+      - "certbot-apache"
+      - "curl"
+      - "git"
+      - "libcap"
+      - "patch"
+      - "py3-passlib"
+      - "openssh-client"
+      - "rsync"
+      - "zlib"
+  notify:
+    - clear caches
+- name: Ensure key directories are owned by flightdeck
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "flightdeck"
+    group: "flightdeck"
+    mode: "u=rwx,g=rwx,o=r"
+    recurse: yes
+  loop:
+    - "/ansible"  
+    - "/etc/apache2"
+    - "/etc/ssl/apache2"
+    - "/etc/apache2/sites.d"
+    - "/run/apache2"
+    - "/var/log/apache2"
+    - "/var/www"
+    - "/srv/html"
+- name: Link logs files to stdout for the Docker log collector
+  file:
+    src: "{{ item }}"
+    dest: "/dev/stdout"
+    state: link
+    force: yes
+    follow: no
+  loop:
+    - "/var/log/apache2/access.log"
+    - "/var/log/apache2/000_default-access_log"
+- name: Template default index.html
+  template:
+    src: "templates/index.html"
+    dest: "/srv/html/index.html"
+    owner: "flightdeck"
+    group: "flightdeck"
+    mode: "u=rw,g=r,o=r"
